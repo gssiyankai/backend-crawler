@@ -14,6 +14,25 @@ def getHtmlPage(url) {
     return wc.getPage(url)
 }
 
+class Installer {
+    String id, name, url
+
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        Installer installer = (Installer) o
+
+        if (id != installer.id) return false
+
+        return true
+    }
+
+    int hashCode() {
+        return (id != null ? id.hashCode() : 0)
+    }
+}
+
 def listFromURL(url) {
     def HtmlPage p = getHtmlPage(url)
     def pattern = Pattern.compile("maven-([0-9\\.]+)(-bin)?.zip\$")
@@ -23,7 +42,7 @@ def listFromURL(url) {
         if (m.find()) {
             def ver = m.group(1)
             def fqUrl = p.getFullyQualifiedUrl(a.hrefAttribute)
-            return ["id": ver, "name": ver, "url": fqUrl.toExternalForm()]
+            return new Installer(id:ver, name:ver, url:fqUrl.toExternalForm())
         }
         return null;
     }
@@ -84,7 +103,9 @@ def listFromNewUrl() {
 
 def listAll() {
     return (listFromOldURL() + listFromNewUrl())
-            .findAll { it != null }.unique().sort { o1, o2 ->
+            .findAll { it != null }.unique().collect { Installer i ->
+            return ["id": i.getId(), "name": i.getName(), "url": i.getUrl()]
+        }.sort { o1, o2 ->
         try {
             def v1 = new VersionNumber(o1.id)
             try {
