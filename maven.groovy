@@ -4,15 +4,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlAnchor
 import com.gargoylesoftware.htmlunit.html.HtmlPage
 import hudson.util.VersionNumber
 import net.sf.json.JSONObject
-
 import java.util.regex.Pattern
-
-def getHtmlPage(url) {
-    def wc = new WebClient()
-    wc.javaScriptEnabled = false;
-    wc.cssEnabled = false;
-    return wc.getPage(url)
-}
 
 class Installer {
     String id, name, url
@@ -31,6 +23,13 @@ class Installer {
     int hashCode() {
         return (id != null ? id.hashCode() : 0)
     }
+}
+
+def getHtmlPage(url) {
+    def wc = new WebClient()
+    wc.javaScriptEnabled = false;
+    wc.cssEnabled = false;
+    return wc.getPage(url)
 }
 
 def listFromURL(url) {
