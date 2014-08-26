@@ -1,6 +1,5 @@
 // Generates server-side metadata for Ant & Maven
 import com.gargoylesoftware.htmlunit.WebClient
-import com.gargoylesoftware.htmlunit.BrowserVersion
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor
 import com.gargoylesoftware.htmlunit.html.HtmlPage
 import hudson.util.VersionNumber
@@ -9,16 +8,15 @@ import net.sf.json.JSONObject
 import java.util.regex.Pattern
 
 def getHtmlPage(url) {
-    def wc = new WebClient(BrowserVersion.FIREFOX_10, "proxy", 3128)
-//    def wc = new WebClient()
-//    wc.javaScriptEnabled = false;
-//    wc.cssEnabled = false;
+    def wc = new WebClient()
+    wc.javaScriptEnabled = false;
+    wc.cssEnabled = false;
     return wc.getPage(url)
 }
 
 def listFromURL(url) {
-    HtmlPage p = getHtmlPage(url)
-    pattern = Pattern.compile("maven-([0-9.]+)(-bin)?.zip\$")
+    def HtmlPage p = getHtmlPage(url)
+    def pattern = Pattern.compile("maven-([0-9\\.]+)(-bin)?.zip\$")
 
     return p.getAnchors().collect { HtmlAnchor a ->
         m = pattern.matcher(a.hrefAttribute)
@@ -36,27 +34,27 @@ def listFromOldURL() {
 }
 
 def listFromNewUrl() {
-    HtmlPage p = getHtmlPage("http://archive.apache.org/dist/maven/")
-    pattern = Pattern.compile("maven-([0-9])/\$")
+    def HtmlPage p = getHtmlPage("http://archive.apache.org/dist/maven/")
+    def pattern = Pattern.compile("maven-([0-9])/\$")
+    def pattern1 = Pattern.compile("([0-9\\.])+/\$")
+    def pattern2 = Pattern.compile("^binaries/\$")
 
     return p.getAnchors().collect { HtmlAnchor a ->
-        m = pattern.matcher(a.hrefAttribute)
+        def m = pattern.matcher(a.hrefAttribute)
         if(m.matches()) {
-            url = p.getFullyQualifiedUrl(a.hrefAttribute)
-            println url
-            HtmlPage p1 = getHtmlPage(url)
+            def url = p.getFullyQualifiedUrl(a.hrefAttribute)
+            def HtmlPage p1 = getHtmlPage(url)
             p1.getAnchors().collect { HtmlAnchor a1 ->
-                url1 = p1.getFullyQualifiedUrl(a1.hrefAttribute)
-                HtmlPage p2 = getHtmlPage(url1)
-                p2.getAnchors().collect { HtmlAnchor a2 ->
-//                    pattern2 = Pattern.compile("maven-([0-9])/([0-9\\.])+/binaries/\$")
-                    pattern2 = Pattern.compile("binaries/\$")
-                    url2 = p2.getFullyQualifiedUrl(a2.hrefAttribute)
-//                    println url2.toExternalForm()
-                    m2 = pattern2.matcher(url2.toExternalForm())
-                    if(m2.matches()) {
-                        println url2
-//                        listFromURL(url2)
+                def m1 = pattern1.matcher(a1.hrefAttribute)
+                if (m1.matches()) {
+                    def url1 = p1.getFullyQualifiedUrl(a1.hrefAttribute)
+                    def HtmlPage p2 = getHtmlPage(url1)
+                    p2.getAnchors().collect { HtmlAnchor a2 ->
+                        def url2 = p2.getFullyQualifiedUrl(a2.hrefAttribute)
+                        def m2 = pattern2.matcher(a2.hrefAttribute)
+                        if (m2.matches()) {
+                            return listFromURL(url2)
+                        }
                     }
                 }
             }
