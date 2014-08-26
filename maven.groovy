@@ -47,25 +47,38 @@ def listMavenFoldersFromNewUrl() {
     }.findAll { it != null }
 }
 
-def listFromNewUrl() {
-    def pattern1 = Pattern.compile("([0-9\\.])+/\$")
-    def pattern2 = Pattern.compile("^binaries/\$")
+def listMavenVersionFoldersFromNewUrl() {
+    def pattern = Pattern.compile("([0-9\\.])+/\$")
 
-    return listMavenFoldersFromNewUrl().collect { HtmlPage p1 ->
-        p1.getAnchors().collect { HtmlAnchor a1 ->
-            def m1 = pattern1.matcher(a1.hrefAttribute)
-            if (m1.matches()) {
-                def url1 = p1.getFullyQualifiedUrl(a1.hrefAttribute)
-                def HtmlPage p2 = getHtmlPage(url1)
-                p2.getAnchors().collect { HtmlAnchor a2 ->
-                    def url2 = p2.getFullyQualifiedUrl(a2.hrefAttribute)
-                    def m2 = pattern2.matcher(a2.hrefAttribute)
-                    if (m2.matches()) {
-                        return listFromURL(url2)
-                    }
-                }
+    return listMavenFoldersFromNewUrl().collect { HtmlPage p ->
+        p.getAnchors().collect { HtmlAnchor a ->
+            def m = pattern.matcher(a.hrefAttribute)
+            if (m.matches()) {
+                def url = p.getFullyQualifiedUrl(a.hrefAttribute)
+                return getHtmlPage(url)
             }
+            return null
         }
+    }.flatten().findAll { it != null }
+}
+
+def listMavenBinariesUrlFromNewUrl() {
+    def pattern = Pattern.compile("^binaries/\$")
+
+    return listMavenVersionFoldersFromNewUrl().collect { HtmlPage p ->
+        p.getAnchors().collect { HtmlAnchor a ->
+            def m = pattern.matcher(a.hrefAttribute)
+            if (m.matches()) {
+                return p.getFullyQualifiedUrl(a.hrefAttribute).toExternalForm()
+            }
+            return null
+        }
+    }.flatten().findAll { it != null }
+}
+
+def listFromNewUrl() {
+    return listMavenBinariesUrlFromNewUrl().collect { String url ->
+        listFromURL(url)
     }.flatten()
 }
 
