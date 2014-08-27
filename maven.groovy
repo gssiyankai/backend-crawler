@@ -1,4 +1,6 @@
 // Generates server-side metadata for Ant & Maven
+
+import com.gargoylesoftware.htmlunit.BrowserVersion
 import com.gargoylesoftware.htmlunit.WebClient
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor
 import com.gargoylesoftware.htmlunit.html.HtmlPage
@@ -19,7 +21,8 @@ class Installer {
 }
 
 def getHtmlPage(url) {
-    def wc = new WebClient()
+    def wc = new WebClient(BrowserVersion.FIREFOX_2, "proxy", 3128)
+//    def wc = new WebClient()
     wc.javaScriptEnabled = false;
     wc.cssEnabled = false;
     return wc.getPage(url)
@@ -40,57 +43,28 @@ def listFromURL(url) {
     }.findAll { it != null }
 }
 
-def listFromOldURL() {
-    return listFromURL("http://archive.apache.org/dist/maven/binaries/")
-}
-
-def listMavenFoldersFromNewUrl() {
-    def HtmlPage p = getHtmlPage("http://archive.apache.org/dist/maven/")
-    def pattern = Pattern.compile("maven-([0-9])/\$")
+def listFromUrl(url, regex) {
+    def HtmlPage p = getHtmlPage(url)
+    def pattern = Pattern.compile(regex)
 
     return p.getAnchors().collect { HtmlAnchor a ->
         def m = pattern.matcher(a.hrefAttribute)
         if (m.matches()) {
-            def url = p.getFullyQualifiedUrl(a.hrefAttribute)
-            return getHtmlPage(url)
+            return p.getFullyQualifiedUrl(a.hrefAttribute)
         }
         return null
     }.findAll { it != null }
 }
 
-def listMavenVersionFoldersFromNewUrl() {
-    def pattern = Pattern.compile("([0-9\\.])+/\$")
-
-    return listMavenFoldersFromNewUrl().collect { HtmlPage p ->
-        p.getAnchors().collect { HtmlAnchor a ->
-            def m = pattern.matcher(a.hrefAttribute)
-            if (m.matches()) {
-                def url = p.getFullyQualifiedUrl(a.hrefAttribute)
-                return getHtmlPage(url)
-            }
-            return null
-        }
-    }.flatten().findAll { it != null }
-}
-
-def listMavenBinariesUrlFromNewUrl() {
-    def pattern = Pattern.compile("^binaries/\$")
-
-    return listMavenVersionFoldersFromNewUrl().collect { HtmlPage p ->
-        p.getAnchors().collect { HtmlAnchor a ->
-            def m = pattern.matcher(a.hrefAttribute)
-            if (m.matches()) {
-                return p.getFullyQualifiedUrl(a.hrefAttribute).toExternalForm()
-            }
-            return null
-        }
-    }.flatten().findAll { it != null }
+def listFromOldURL() {
+    return listFromURL("http://archive.apache.org/dist/maven/binaries/")
 }
 
 def listFromNewUrl() {
-    return listMavenBinariesUrlFromNewUrl().collect { String url ->
-        listFromURL(url)
-    }.flatten()
+    return listFromUrl("http://archive.apache.org/dist/maven/", "maven-([0-9])/\$")
+            .collect { url -> listFromUrl(url, "([0-9\\.])+/\$") }.flatten()
+            .collect { url -> listFromUrl(url, "^binaries/\$") }.flatten()
+            .collect { url -> listFromURL(url) }.flatten()
 }
 
 def listAll() {
