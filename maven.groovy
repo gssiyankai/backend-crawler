@@ -41,10 +41,10 @@ def listFromURL(url) {
         if (m.find()) {
             def ver = m.group(1)
             def fqUrl = p.getFullyQualifiedUrl(a.hrefAttribute)
-            return new Installer(id:ver, name:ver, url:fqUrl.toExternalForm())
+            return new Installer(id: ver, name: ver, url: fqUrl.toExternalForm())
         }
         return null;
-    }
+    }.findAll { it != null }
 }
 
 def listFromOldURL() {
@@ -97,14 +97,14 @@ def listMavenBinariesUrlFromNewUrl() {
 def listFromNewUrl() {
     return listMavenBinariesUrlFromNewUrl().collect { String url ->
         listFromURL(url)
-    }.flatten()
+    }
 }
 
 def listAll() {
     return (listFromOldURL() + listFromNewUrl())
-            .findAll { it != null }.unique().collect { Installer i ->
-            return ["id": i.getId(), "name": i.getName(), "url": i.getUrl()]
-        }.sort { o1, o2 ->
+            .unique().collect { Installer i ->
+        return ["id": i.getId(), "name": i.getName(), "url": i.getUrl()]
+    }.sort { o1, o2 ->
         try {
             def v1 = new VersionNumber(o1.id)
             try {
