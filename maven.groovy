@@ -10,18 +10,11 @@ class Installer {
     String id, name, url
 
     boolean equals(o) {
-        if (this.is(o)) return true
-        if (getClass() != o.class) return false
-
-        Installer installer = (Installer) o
-
-        if (id != installer.id) return false
-
-        return true
+        return id == o.id
     }
 
     int hashCode() {
-        return (id != null ? id.hashCode() : 0)
+        return id.hashCode()
     }
 }
 
@@ -97,7 +90,7 @@ def listMavenBinariesUrlFromNewUrl() {
 def listFromNewUrl() {
     return listMavenBinariesUrlFromNewUrl().collect { String url ->
         listFromURL(url)
-    }
+    }.flatten()
 }
 
 def listAll() {
