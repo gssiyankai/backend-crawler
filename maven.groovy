@@ -9,8 +9,8 @@ import hudson.util.VersionNumber
 
 def getHtmlPage(url) {
     def wc = new WebClient()
-    wc.javaScriptEnabled = false;
-    wc.cssEnabled = false;
+    wc.javaScriptEnabled = false
+    wc.cssEnabled = false
     return wc.getPage(url)
 }
 
@@ -25,7 +25,7 @@ def listFromURL(url) {
             def fqUrl = p.getFullyQualifiedUrl(a.hrefAttribute).toExternalForm()
             return ["id": ver, "name": ver, "url": fqUrl]
         }
-        return null;
+        return null
     }.findAll { it != null }
 }
 
