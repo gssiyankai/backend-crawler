@@ -3,9 +3,9 @@
 import com.gargoylesoftware.htmlunit.WebClient
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor
 import com.gargoylesoftware.htmlunit.html.HtmlPage
-import hudson.util.VersionNumber
-import net.sf.json.JSONObject
 import java.util.regex.Pattern
+import net.sf.json.JSONObject
+import hudson.util.VersionNumber
 
 def getHtmlPage(url) {
     def wc = new WebClient()
