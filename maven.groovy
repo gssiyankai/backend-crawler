@@ -1,4 +1,5 @@
-// Generates server-side metadata for Ant & Maven
+#!./lib/runner.groovy
+// Generates server-side metadata for Maven
 import com.gargoylesoftware.htmlunit.WebClient
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor
 import com.gargoylesoftware.htmlunit.html.HtmlPage
